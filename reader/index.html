@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#f5f0e8"/>
+<title>青崖雪 · 阅读</title>
+<style>
+:root {
+  --bg: #f5f0e8;
+  --card: #fffdf8;
+  --ink: #2b2b2b;
+  --sub: #8a8178;
+  --line: #e3dbce;
+  --accent: #8c6a4f;
+  --accent-soft: #efe5d8;
+}
+body.night {
+  --bg: #171512;
+  --card: #201d19;
+  --ink: #cfc6b8;
+  --sub: #7d7568;
+  --line: #342f28;
+  --accent: #c9a97f;
+  --accent-soft: #2b251d;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC",
+               "SimSun", "PingFang SC", serif;
+  transition: background .3s, color .3s;
+}
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+.topbar h1 {
+  margin: 0; font-size: 17px; font-weight: 600; letter-spacing: 2px;
+}
+.tools { display: flex; gap: 8px; align-items: center; }
+.icon-btn {
+  border: 1px solid var(--line); background: var(--card); color: var(--ink);
+  border-radius: 8px; min-width: 34px; height: 34px; font-size: 15px;
+  cursor: pointer; padding: 0 8px;
+}
+.icon-btn:active { background: var(--accent-soft); }
+.wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
+
+/* 章节列表 */
+.book-meta { color: var(--sub); font-size: 13px; margin: 4px 4px 16px; }
+.chapter-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 14px; margin-bottom: 10px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  cursor: pointer; text-decoration: none; color: var(--ink);
+}
+.chapter-item:active { background: var(--accent-soft); }
+.chapter-item .t { font-size: 16px; }
+.chapter-item .meta { font-size: 12px; color: var(--sub); margin-top: 4px; }
+.chapter-item .new {
+  background: #b3543e; color: #fff; font-size: 11px; border-radius: 6px;
+  padding: 2px 6px; margin-left: 8px; flex: none;
+}
+.chapter-item .done { color: var(--accent); margin-left: 8px; flex: none; }
+.tip {
+  color: var(--sub); font-size: 12px; text-align: center; margin: 22px 8px;
+  line-height: 1.7;
+}
+.epub-link {
+  display: block; text-align: center; margin: 10px 0 30px;
+  color: var(--accent); font-size: 14px; text-decoration: none;
+  border: 1px solid var(--line); border-radius: 10px; padding: 12px;
+  background: var(--card);
+}
+
+/* 阅读页 */
+.reader { display: none; }
+.reader.show { display: block; }
+.reader h2 {
+  font-size: 22px; text-align: center; font-weight: 600;
+  margin: 8px 0 22px; letter-spacing: 2px;
+}
+.reader p {
+  text-indent: 2em; line-height: 2; margin: 0 0 0.65em;
+  font-size: 18px; word-break: break-word;
+}
+.reader .nav {
+  display: flex; gap: 10px; margin: 34px 0 24px;
+}
+.reader .nav button {
+  flex: 1; padding: 13px 0; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--card); color: var(--ink); font-size: 15px; cursor: pointer;
+}
+.reader .nav button:disabled { opacity: .35; }
+.reader .nav button:active:not(:disabled) { background: var(--accent-soft); }
+.back-link {
+  display: inline-block; margin: 0 0 18px; color: var(--accent);
+  font-size: 14px; text-decoration: none;
+}
+
+/* 提示条 */
+.toast {
+  position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%) translateY(80px);
+  background: var(--accent); color: #fff; font-size: 14px;
+  padding: 11px 20px; border-radius: 24px; z-index: 99;
+  transition: transform .35s ease; box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* 骨架 */
+.loading { color: var(--sub); text-align: center; padding: 60px 0; font-size: 15px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>青崖雪</h1>
+  <div class="tools">
+    <button class="icon-btn" id="fontMinus" title="减小字号">A−</button>
+    <button class="icon-btn" id="fontPlus" title="增大字号">A+</button>
+    <button class="icon-btn" id="nightBtn" title="夜间模式">☾</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="listView">
+    <div class="book-meta" id="bookMeta">正在连接阅读服务…</div>
+    <div id="chapterList"><div class="loading">加载中…</div></div>
+    <a class="epub-link" href="/epub" download="青崖雪.epub">下载 EPUB 版（导入手机阅读 App）</a>
+    <div class="tip">新章节写好之后，页面会自动检测。<br/>如果没看到更新，下拉刷新或关掉页面重新打开。<br/>阅读进度会自动保存在这台手机浏览器里。</div>
+  </div>
+
+  <div class="reader" id="readerView">
+    <a class="back-link" href="#" id="backLink">← 返回目录</a>
+    <h2 id="readerTitle"></h2>
+    <div id="readerBody"></div>
+    <div class="nav">
+      <button id="prevBtn">上一章</button>
+      <button id="nextBtn">下一章</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+  var KEY_PREFIX = "qys.progress.";
+  var KEY_CURRENT = "qys.current";
+  var KEY_FONT = "qys.fontSize";
+  var KEY_NIGHT = "qys.night";
+  var KEY_SEEN = "qys.seen";
+
+  var chapters = [];
+  var currentFile = null;
+  var chapterData = null;
+  var fontSize = parseInt(localStorage.getItem(KEY_FONT), 10) || 18;
+  var night = localStorage.getItem(KEY_NIGHT) === "1";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var listView = $("listView"), readerView = $("readerView");
+
+  function applyFont() {
+    fontSize = Math.min(26, Math.max(14, fontSize));
+    localStorage.setItem(KEY_FONT, String(fontSize));
+    document.querySelectorAll("#readerBody p").forEach(function (p) {
+      p.style.fontSize = fontSize + "px";
+    });
+  }
+
+  function applyNight() {
+    document.body.classList.toggle("night", night);
+    localStorage.setItem(KEY_NIGHT, night ? "1" : "0");
+    $("nightBtn").textContent = night ? "☀" : "☾";
+  }
+
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function () { t.classList.remove("show"); }, 3000);
+  }
+
+  function fetchJSON(url) {
+    return fetch(url).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    });
+  }
+
+  function seenFiles() {
+    try { return JSON.parse(localStorage.getItem(KEY_SEEN) || "[]"); }
+    catch (e) { return []; }
+  }
+
+  function saveSeen() {
+    localStorage.setItem(KEY_SEEN, JSON.stringify(chapters.map(function (c) { return c.file; })));
+  }
+
+  function isNew(file) {
+    return seenFiles().indexOf(file) < 0;
+  }
+
+  function renderList() {
+    var box = $("chapterList");
+    if (!chapters.length) {
+      box.innerHTML = '<div class="loading">还没有章节</div>';
+      return;
+    }
+    $("bookMeta").textContent = "共 " + chapters.length + " 章 · 约 "
+      + Math.round(chapters.reduce(function (s, c) { return s + c.chars; }, 0) / 1000)
+      + " 万字";
+    box.innerHTML = "";
+    chapters.forEach(function (c) {
+      var a = document.createElement("a");
+      a.className = "chapter-item";
+      a.href = "#";
+      a.setAttribute("data-file", c.file);
+      var idx = chapters.indexOf(c);
+      var inner = '<div><div class="t">' + c.title + '</div>'
+        + '<div class="meta">约 ' + c.chars + ' 字</div></div>';
+      if (isNew(c.file)) inner += '<span class="new">新</span>';
+      else if (localStorage.getItem(KEY_PREFIX + c.file)) inner += '<span class="done">✓</span>';
+      a.innerHTML = inner;
+      a.addEventListener("click", function (e) {
+        e.preventDefault();
+        openChapter(c.file, idx);
+      });
+      box.appendChild(a);
+    });
+    saveSeen();
+  }
+
+  function markSeen(file) {
+    var seen = seenFiles();
+    if (seen.indexOf(file) < 0) {
+      seen.push(file);
+      localStorage.setItem(KEY_SEEN, JSON.stringify(seen));
+    }
+  }
+
+  function openChapter(file, idx) {
+    currentFile = file;
+    localStorage.setItem(KEY_CURRENT, file);
+    listView.style.display = "none";
+    readerView.classList.add("show");
+    $("readerBody").innerHTML = '<div class="loading">加载中…</div>';
+    fetchJSON("/api/chapter?file=" + encodeURIComponent(file)).then(function (data) {
+      chapterData = data;
+      markSeen(file);
+      renderChapter();
+      renderList();
+      window.scrollTo(0, 0);
+    }).catch(function () {
+      $("readerBody").innerHTML = '<div class="loading">加载失败，请确认电脑端服务还开着</div>';
+    });
+    updateNavButtons();
+  }
+
+  function renderChapter() {
+    if (!chapterData) return;
+    $("readerTitle").textContent = chapterData.title;
+    var body = $("readerBody");
+    body.innerHTML = "";
+    chapterData.paragraphs.forEach(function (p, i) {
+      var el = document.createElement("p");
+      el.id = "p" + i;
+      el.textContent = p;
+      el.style.fontSize = fontSize + "px";
+      body.appendChild(el);
+    });
+    var idx = parseInt(localStorage.getItem(KEY_PREFIX + currentFile), 10);
+    if (!isNaN(idx) && document.getElementById("p" + idx)) {
+      document.getElementById("p" + idx).scrollIntoView();
+    }
+  }
+
+  function saveProgress() {
+    if (!currentFile) return;
+    var paras = document.querySelectorAll("#readerBody p");
+    var mid = window.scrollY + window.innerHeight * 0.35;
+    var idx = 0;
+    for (var i = 0; i < paras.length; i++) {
+      if (paras[i].offsetTop <= mid) idx = i;
+      else break;
+    }
+    localStorage.setItem(KEY_PREFIX + currentFile, String(idx));
+  }
+
+  function goBack() {
+    saveProgress();
+    readerView.classList.remove("show");
+    listView.style.display = "";
+    currentFile = null;
+    chapterData = null;
+    window.scrollTo(0, 0);
+  }
+
+  function updateNavButtons() {
+    if (!currentFile || !chapters.length) return;
+    var idx = chapters.findIndex(function (c) { return c.file === currentFile; });
+    $("prevBtn").disabled = idx <= 0;
+    $("nextBtn").disabled = idx < 0 || idx >= chapters.length - 1;
+  }
+
+  function go(delta) {
+    var idx = chapters.findIndex(function (c) { return c.file === currentFile; });
+    if (idx < 0) return;
+    var next = idx + delta;
+    if (next < 0 || next >= chapters.length) return;
+    saveProgress();
+    openChapter(chapters[next].file, next);
+  }
+
+  function poll() {
+    fetchJSON("/api/chapters").then(function (data) {
+      var oldCount = chapters.length;
+      var oldFiles = chapters.map(function (c) { return c.file; }).join(",");
+      chapters = data;
+      var newFiles = chapters.map(function (c) { return c.file; }).join(",");
+      if (chapters.length > oldCount || newFiles !== oldFiles) {
+        renderList();
+        updateNavButtons();
+        if (chapters.length > oldCount) {
+          toast("发现新章节：" + chapters[chapters.length - 1].title);
+        }
+      } else if (!document.querySelector("#chapterList .chapter-item")) {
+        renderList();
+      }
+    }).catch(function () {
+      $("bookMeta").textContent = "连接不上电脑，请确认电脑端阅读服务还在运行";
+    });
+  }
+
+  function init() {
+    applyNight();
+    applyFont();
+    $("fontMinus").addEventListener("click", function () { fontSize -= 1; applyFont(); });
+    $("fontPlus").addEventListener("click", function () { fontSize += 1; applyFont(); });
+    $("nightBtn").addEventListener("click", function () { night = !night; applyNight(); });
+    $("backLink").addEventListener("click", function (e) { e.preventDefault(); goBack(); });
+    $("prevBtn").addEventListener("click", function () { go(-1); });
+    $("nextBtn").addEventListener("click", function () { go(1); });
+    window.addEventListener("scroll", function () {
+      clearTimeout(window._scrollTimer);
+      window._scrollTimer = setTimeout(saveProgress, 400);
+    }, { passive: true });
+    poll();
+    var last = localStorage.getItem(KEY_CURRENT);
+    if (last) {
+      var idx = chapters.findIndex(function (c) { return c.file === last; });
+      if (idx >= 0) openChapter(last, idx);
+    }
+    setInterval(poll, 20000);
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
