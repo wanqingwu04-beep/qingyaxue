@@ -231,6 +231,7 @@ body.reading.controls .reader .nav {
   <div id="measure"></div>
   <div id="pageIndicator"></div>
   <div class="nav">
+    <button id="quarkBtn">阅读模式</button>
     <button id="prevBtn">上一章</button>
     <button id="nextBtn">下一章</button>
   </div>
@@ -580,6 +581,10 @@ body.reading.controls .reader .nav {
       else buildScrollBody();
       window.scrollTo(0, 0);
       updateNav();
+      if (/quark/i.test(navigator.userAgent) && !localStorage.getItem("qys.quarkHint")) {
+        localStorage.setItem("qys.quarkHint", "1");
+        toast("夸克阅读模式：点下方「阅读模式」在本章使用");
+      }
     }).catch(function () {
       chapterLoading.textContent = "加载失败，请检查网络后刷新";
     });
@@ -694,6 +699,10 @@ body.reading.controls .reader .nav {
     $("backLink").addEventListener("click", function (e) { e.preventDefault(); goBack(); });
     $("prevBtn").addEventListener("click", function () { goChapter(-1); });
     $("nextBtn").addEventListener("click", function () { goChapter(1); });
+    $("quarkBtn").addEventListener("click", function () {
+      if (!currentFile) return;
+      window.open("chapters/" + currentFile, "_blank", "noopener");
+    });
     window.addEventListener("scroll", function () {
       clearTimeout(window._scrollTimer);
       window._scrollTimer = setTimeout(saveProgress, 400);

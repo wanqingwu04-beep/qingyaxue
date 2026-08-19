@@ -80,6 +80,13 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, EPUB.read_bytes(), "application/epub+zip")
             else:
                 self._send(404, b"epub not found")
+        elif path.startswith("/chapters/"):
+            fname = path.split("/")[-1]
+            p = CH_DIR / fname
+            if p.exists():
+                self._send(200, p.read_bytes(), "text/html; charset=utf-8")
+            else:
+                self._send(404, b"not found")
         else:
             self._send(404, b"not found")
 

@@ -15,6 +15,26 @@ CH_DIR = ROOT / "chapters"
 SITE = ROOT / "docs"
 
 
+def articleize(text, title):
+    """把章节源文件转成夸克阅读模式可识别的静态文章页。"""
+    meta = (
+        '<meta name="description" content="%s - 青崖雪"/>\n'
+        '  <meta name="applicable-device" content="mobile"/>'
+    ) % title
+    text = text.replace(
+        '<meta charset="utf-8"/>',
+        '<meta charset="utf-8"/>\n  ' + meta,
+        1,
+    )
+    text = re.sub(
+        r"(<body>)([\s\S]*?)(</body>)",
+        r"\1<article>\2</article>\3",
+        text,
+        flags=re.S,
+    )
+    return text
+
+
 def main():
     chapters = []
     SITE.mkdir(exist_ok=True)
@@ -27,7 +47,8 @@ def main():
         body = re.sub(r"<[^>]+>", "", text)
         chars = len(re.sub(r"\s", "", body))
         chapters.append({"file": p.name, "title": title, "chars": chars})
-        shutil.copyfile(p, SITE / "chapters" / p.name)
+        out = SITE / "chapters" / p.name
+        out.write_text(articleize(text, title), encoding="utf-8")
 
     (SITE / "chapters.json").write_text(
         json.dumps(chapters, ensure_ascii=False, indent=2), encoding="utf-8"

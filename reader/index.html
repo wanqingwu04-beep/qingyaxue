@@ -177,6 +177,7 @@ body.scroll #readerBody { display: block; }
   <div id="measure"></div>
   <div id="pageIndicator"></div>
   <div class="nav">
+    <button id="quarkBtn">阅读模式</button>
     <button id="prevBtn">上一章</button>
     <button id="nextBtn">下一章</button>
   </div>
@@ -390,7 +391,7 @@ body.scroll #readerBody { display: block; }
   }
 
   function renderPages() {
-    pageArea.querySelectorAll(".page").forEach(function (el) { el.remove(); });
+    pageArea.innerHTML = "";
     pages.forEach(function (items, idx) {
       var div = document.createElement("div");
       div.className = "page" + (idx === currentPage ? " active" : "");
@@ -472,7 +473,7 @@ body.scroll #readerBody { display: block; }
     listView.style.display = "none";
     readerView.classList.add("show");
     $("readerTitle").textContent = "加载中…";
-    pageArea.innerHTML = '<div class="loading">加载中…</div>';
+    pageArea.innerHTML = "";
     readerBody.innerHTML = '<div class="loading">加载中…</div>';
     fetchJSON("/api/chapter?file=" + encodeURIComponent(file)).then(function (data) {
       chapterData = data;
@@ -593,6 +594,10 @@ body.scroll #readerBody { display: block; }
     $("backLink").addEventListener("click", function (e) { e.preventDefault(); goBack(); });
     $("prevBtn").addEventListener("click", function () { goChapter(-1); });
     $("nextBtn").addEventListener("click", function () { goChapter(1); });
+    $("quarkBtn").addEventListener("click", function () {
+      if (!currentFile) return;
+      window.open("chapters/" + currentFile, "_blank", "noopener");
+    });
     window.addEventListener("scroll", function () {
       clearTimeout(window._scrollTimer);
       window._scrollTimer = setTimeout(saveProgress, 400);
