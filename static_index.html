@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#f5f0e8"/>
+<link rel="icon" href="data:,"/>
 <title>青崖雪 · 阅读</title>
 <style>
 :root {
@@ -40,6 +41,7 @@ body {
   padding: 10px 14px;
   background: var(--card);
   border-bottom: 1px solid var(--line);
+  transition: transform .25s ease, opacity .25s ease;
 }
 .topbar h1 {
   margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 2px;
@@ -85,6 +87,7 @@ body {
   height: 100vh; height: 100dvh;
   max-width: 720px; margin: 0 auto;
 }
+.reader { position: relative; }
 .reader .reader-head { padding: 8px 14px 0; }
 .back-link {
   display: inline-block; color: var(--accent); font-size: 14px;
@@ -104,9 +107,14 @@ body {
 body.paged #pageArea { display: block; }
 .page {
   position: absolute; inset: 0; padding: 2px 12px;
-  overflow: hidden; visibility: hidden;
+  overflow: hidden; visibility: hidden; transform: none; opacity: 1;
 }
 .page.active { visibility: visible; }
+.page.anim { visibility: visible; transition: transform .28s ease, opacity .28s ease; }
+.page.from-right { transform: translateX(105%); }
+.page.from-left { transform: translateX(-105%); }
+.page.to-left { transform: translateX(-105%); opacity: 0; }
+.page.to-right { transform: translateX(105%); opacity: 0; }
 .page p, .measure-p {
   text-indent: 2em; line-height: 1.9; margin: 0 0 0.6em;
   word-break: break-word;
@@ -114,6 +122,7 @@ body.paged #pageArea { display: block; }
 #pageIndicator {
   text-align: center; color: var(--sub); font-size: 12px;
   padding: 6px 0 2px; flex: none;
+  transition: opacity .25s ease, transform .25s ease;
 }
 
 /* 滚动模式 */
@@ -137,6 +146,50 @@ body.scroll #readerBody { display: block; }
 
 #measure { position: fixed; left: -10000px; top: 0; visibility: hidden; pointer-events: none; }
 
+/* 沉浸式阅读：进入阅读后顶栏、章节头、底部导航默认隐藏，点中间呼出 */
+body.reading .topbar {
+  transform: translateY(-105%);
+  opacity: 0;
+  pointer-events: none;
+}
+body.reading.controls .topbar {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+body.reading .reader-head {
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+body.reading.controls .reader-head {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+body.reading #pageIndicator,
+body.reading .reader .nav {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+body.reading.controls #pageIndicator,
+body.reading.controls .reader .nav {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.reader-head { transition: opacity .25s ease, transform .25s ease; }
+.reader .nav { transition: opacity .25s ease, transform .25s ease; }
+
+/* 章节加载覆盖层 */
+.chapter-loading {
+  display: none; position: absolute; inset: 0; z-index: 30;
+  align-items: center; justify-content: center;
+  background: var(--bg); color: var(--sub); font-size: 15px;
+}
+.chapter-loading.show { display: flex; }
+
 .toast {
   position: fixed; left: 50%; bottom: 44px; transform: translateX(-50%) translateY(80px);
   background: var(--accent); color: #fff; font-size: 14px;
@@ -149,7 +202,7 @@ body.scroll #readerBody { display: block; }
 </style>
 </head>
 <body class="paged">
-<div class="topbar">
+<div class="topbar" id="topbar">
   <h1>青崖雪</h1>
   <div class="tools">
     <button class="icon-btn" id="modeBtn" title="切换阅读模式">滚动</button>
@@ -171,6 +224,7 @@ body.scroll #readerBody { display: block; }
     <a class="back-link" href="#" id="backLink">← 返回目录</a>
     <h2 id="readerTitle"></h2>
   </div>
+  <div class="chapter-loading" id="chapterLoading">加载中…</div>
   <div id="readerBody"></div>
   <div id="pageArea">
   </div>
@@ -202,11 +256,13 @@ body.scroll #readerBody { display: block; }
 
   var pages = [];
   var currentPage = 0;
+  var animating = false;
 
   var $ = function (id) { return document.getElementById(id); };
   var listView = $("listView"), readerView = $("readerView");
   var pageArea = $("pageArea"), readerBody = $("readerBody");
   var measure = $("measure");
+  var chapterLoading = $("chapterLoading");
 
   function applyFont() {
     fontSize = Math.min(26, Math.max(14, fontSize));
@@ -397,7 +453,7 @@ body.scroll #readerBody { display: block; }
   }
 
   function renderPages() {
-    pageArea.querySelectorAll(".page").forEach(function (el) { el.remove(); });
+    pageArea.innerHTML = "";
     pages.forEach(function (items, idx) {
       var div = document.createElement("div");
       div.className = "page" + (idx === currentPage ? " active" : "");
@@ -414,16 +470,45 @@ body.scroll #readerBody { display: block; }
   function showPage() {
     var els = pageArea.querySelectorAll(".page");
     for (var i = 0; i < els.length; i++) els[i].classList.toggle("active", i === currentPage);
+    updateIndicator();
+  }
+
+  function updateIndicator() {
     $("pageIndicator").textContent = pages.length ? ((currentPage + 1) + " / " + pages.length) : "";
     saveProgress();
   }
 
+  function animatePage(delta) {
+    if (!pages.length || animating) return;
+    var next = currentPage + delta;
+    if (next < 0 || next >= pages.length) return;
+    var els = pageArea.querySelectorAll(".page");
+    var cur = els[currentPage], nxt = els[next];
+    if (!cur || !nxt) return;
+    animating = true;
+    cur.classList.add("anim");
+    nxt.classList.add("anim", "active");
+    if (delta > 0) nxt.classList.add("from-right");
+    else nxt.classList.add("from-left");
+    void nxt.offsetWidth;
+    if (delta > 0) {
+      cur.classList.add("to-left");
+      nxt.classList.remove("from-right");
+    } else {
+      cur.classList.add("to-right");
+      nxt.classList.remove("from-left");
+    }
+    setTimeout(function () {
+      cur.classList.remove("active", "anim", "to-left", "to-right");
+      nxt.classList.remove("anim", "from-right", "from-left");
+      currentPage = next;
+      animating = false;
+      updateIndicator();
+    }, 300);
+  }
+
   function goPage(delta) {
-    if (!pages.length) return;
-    var np = currentPage + delta;
-    if (np < 0 || np >= pages.length) return;
-    currentPage = np;
-    showPage();
+    animatePage(delta);
   }
 
   function relayoutPages() {
@@ -478,14 +563,17 @@ body.scroll #readerBody { display: block; }
     localStorage.setItem(KEY_CURRENT, file);
     listView.style.display = "none";
     readerView.classList.add("show");
+    document.body.classList.add("reading", "controls");
     $("readerTitle").textContent = "加载中…";
-    pageArea.innerHTML = '<div class="loading">加载中…</div>';
+    pageArea.innerHTML = "";
     readerBody.innerHTML = '<div class="loading">加载中…</div>';
+    chapterLoading.classList.add("show");
     loadChapter(file).then(function (data) {
       chapterData = data;
       markSeen(file);
       renderList();
       $("readerTitle").textContent = data.title;
+      chapterLoading.classList.remove("show");
       pages = [];
       currentPage = 0;
       if (mode === "page") layoutPages();
@@ -493,8 +581,7 @@ body.scroll #readerBody { display: block; }
       window.scrollTo(0, 0);
       updateNav();
     }).catch(function () {
-      $("readerTitle").textContent = "加载失败";
-      pageArea.innerHTML = '<div class="loading">加载失败，请检查网络后刷新</div>';
+      chapterLoading.textContent = "加载失败，请检查网络后刷新";
     });
   }
 
@@ -507,11 +594,15 @@ body.scroll #readerBody { display: block; }
   function goBack() {
     saveProgress();
     readerView.classList.remove("show");
+    document.body.classList.remove("reading", "controls");
     listView.style.display = "";
     currentFile = null;
     chapterData = null;
     pages = [];
     currentPage = 0;
+    animating = false;
+    chapterLoading.classList.remove("show");
+    chapterLoading.textContent = "加载中…";
     window.scrollTo(0, 0);
   }
 
@@ -560,7 +651,7 @@ body.scroll #readerBody { display: block; }
       var w = rect.width;
       if (x < w * 0.32) goPage(-1);
       else if (x > w * 0.68) goPage(1);
-      else toast("第 " + (currentPage + 1) + " / " + pages.length + " 页");
+      else document.body.classList.toggle("controls");
     });
     document.addEventListener("keydown", function (e) {
       if (!readerView.classList.contains("show") || mode !== "page") return;
