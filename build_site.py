@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""生成 GitHub Pages 静态阅读站点。
+"""生成 GitHub Pages 静态阅读站点（输出到 docs/）。
 
 用法：python build_site.py
-会生成 site/ 目录（index.html + chapters.json + chapters/ + epub）。
+会生成 docs/ 目录（index.html + chapters.json + chapters/ + epub）。
 """
 
 import json
@@ -34,6 +34,7 @@ def main():
     )
     (SITE / ".nojekyll").write_text("", encoding="utf-8")
     shutil.copyfile(ROOT / "styles.css", SITE / "styles.css")
+    shutil.copyfile(ROOT / "static_index.html", SITE / "index.html")
     epub = ROOT / "青崖雪.epub"
     if epub.exists():
         shutil.copyfile(epub, SITE / "青崖雪.epub")
