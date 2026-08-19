@@ -6,8 +6,8 @@
 
 - `chapters/` — 章节源文件（HTML）
 - `build_epub.py` — 打包 EPUB
-- `build_site.py` — 生成 GitHub Pages 静态阅读站点
-- `site/` — 静态站点（发布用）
+- `build_site.py` — 生成 GitHub Pages 静态阅读站点（输出到 docs/）
+- `docs/` — 静态站点（发布用）
 - `reader/` — 局域网手机阅读服务（可选，不需要电脑常开时用 GitHub Pages 代替）
 
 ## 发布到 GitHub Pages

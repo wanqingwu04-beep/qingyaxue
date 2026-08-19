@@ -37,5 +37,5 @@ if (-not $remote) {
 
 Write-Host ""
 Write-Host "发布完成！"
-Write-Host "GitHub Pages 设置：Settings → Pages → Source 选择 main 分支 /site 目录"
+Write-Host "GitHub Pages 设置：Settings → Pages → Source 选择 main 分支 /docs 目录"
 Write-Host "手机访问：https://<你的账号>.github.io/$Repo/"

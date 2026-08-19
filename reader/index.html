@@ -25,38 +25,37 @@ body.night {
   --accent-soft: #2b251d;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; height: 100%; }
 body {
   background: var(--bg);
   color: var(--ink);
   font-family: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC",
                "SimSun", "PingFang SC", serif;
   transition: background .3s, color .3s;
+  overscroll-behavior: none;
 }
 .topbar {
   position: sticky; top: 0; z-index: 20;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: var(--card);
   border-bottom: 1px solid var(--line);
 }
 .topbar h1 {
-  margin: 0; font-size: 17px; font-weight: 600; letter-spacing: 2px;
+  margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 2px;
 }
-.tools { display: flex; gap: 8px; align-items: center; }
+.tools { display: flex; gap: 6px; align-items: center; }
 .icon-btn {
   border: 1px solid var(--line); background: var(--card); color: var(--ink);
-  border-radius: 8px; min-width: 34px; height: 34px; font-size: 15px;
-  cursor: pointer; padding: 0 8px;
+  border-radius: 8px; min-width: 34px; height: 32px; font-size: 13px;
+  cursor: pointer; padding: 0 8px; white-space: nowrap;
 }
 .icon-btn:active { background: var(--accent-soft); }
-.wrap { max-width: 720px; margin: 0 auto; padding: 16px; }
-
-/* 章节列表 */
-.book-meta { color: var(--sub); font-size: 13px; margin: 4px 4px 16px; }
+.wrap { max-width: 720px; margin: 0 auto; padding: 14px; }
+.book-meta { color: var(--sub); font-size: 13px; margin: 4px 4px 14px; }
 .chapter-item {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 15px 14px; margin-bottom: 10px;
+  padding: 14px; margin-bottom: 9px;
   background: var(--card); border: 1px solid var(--line); border-radius: 12px;
   cursor: pointer; text-decoration: none; color: var(--ink);
 }
@@ -69,81 +68,117 @@ body {
 }
 .chapter-item .done { color: var(--accent); margin-left: 8px; flex: none; }
 .tip {
-  color: var(--sub); font-size: 12px; text-align: center; margin: 22px 8px;
+  color: var(--sub); font-size: 12px; text-align: center; margin: 20px 8px;
   line-height: 1.7;
 }
 .epub-link {
-  display: block; text-align: center; margin: 10px 0 30px;
+  display: block; text-align: center; margin: 8px 0 26px;
   color: var(--accent); font-size: 14px; text-decoration: none;
-  border: 1px solid var(--line); border-radius: 10px; padding: 12px;
+  border: 1px solid var(--line); border-radius: 10px; padding: 11px;
   background: var(--card);
 }
 
-/* 阅读页 */
+/* 阅读器：默认翻页模式 */
 .reader { display: none; }
-.reader.show { display: block; }
+.reader.show {
+  display: flex; flex-direction: column;
+  height: 100vh; height: 100dvh;
+  max-width: 720px; margin: 0 auto;
+}
+.reader .reader-head { padding: 8px 14px 0; }
+.back-link {
+  display: inline-block; color: var(--accent); font-size: 14px;
+  text-decoration: none; margin-bottom: 6px;
+}
 .reader h2 {
-  font-size: 22px; text-align: center; font-weight: 600;
-  margin: 8px 0 22px; letter-spacing: 2px;
+  font-size: 20px; text-align: center; font-weight: 600;
+  margin: 2px 0 10px; letter-spacing: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.reader p {
+
+/* 翻页区 */
+#pageArea {
+  display: none; flex: 1; min-height: 0; position: relative;
+  overflow: hidden; margin: 0 4px;
+}
+body.paged #pageArea { display: block; }
+.page {
+  position: absolute; inset: 0; padding: 2px 12px;
+  overflow: hidden; visibility: hidden;
+}
+.page.active { visibility: visible; }
+.page p, .measure-p {
+  text-indent: 2em; line-height: 1.9; margin: 0 0 0.6em;
+  word-break: break-word;
+}
+#pageIndicator {
+  text-align: center; color: var(--sub); font-size: 12px;
+  padding: 6px 0 2px; flex: none;
+}
+
+/* 滚动模式 */
+#readerBody {
+  display: none; flex: 1; min-height: 0; overflow-y: auto;
+  padding: 2px 16px 30px;
+}
+body.scroll #readerBody { display: block; }
+#readerBody p {
   text-indent: 2em; line-height: 2; margin: 0 0 0.65em;
-  font-size: 18px; word-break: break-word;
+  word-break: break-word;
 }
-.reader .nav {
-  display: flex; gap: 10px; margin: 34px 0 24px;
-}
+
+.reader .nav { display: flex; gap: 10px; padding: 8px 14px 18px; flex: none; }
 .reader .nav button {
-  flex: 1; padding: 13px 0; border-radius: 10px; border: 1px solid var(--line);
+  flex: 1; padding: 12px 0; border-radius: 10px; border: 1px solid var(--line);
   background: var(--card); color: var(--ink); font-size: 15px; cursor: pointer;
 }
 .reader .nav button:disabled { opacity: .35; }
 .reader .nav button:active:not(:disabled) { background: var(--accent-soft); }
-.back-link {
-  display: inline-block; margin: 0 0 18px; color: var(--accent);
-  font-size: 14px; text-decoration: none;
-}
 
-/* 提示条 */
+#measure { position: fixed; left: -10000px; top: 0; visibility: hidden; pointer-events: none; }
+
 .toast {
-  position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%) translateY(80px);
+  position: fixed; left: 50%; bottom: 44px; transform: translateX(-50%) translateY(80px);
   background: var(--accent); color: #fff; font-size: 14px;
-  padding: 11px 20px; border-radius: 24px; z-index: 99;
+  padding: 10px 18px; border-radius: 24px; z-index: 99;
   transition: transform .35s ease; box-shadow: 0 6px 18px rgba(0,0,0,.18);
-  white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis;
+  max-width: 92vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
-
-/* 骨架 */
 .loading { color: var(--sub); text-align: center; padding: 60px 0; font-size: 15px; }
 </style>
 </head>
-<body>
+<body class="paged">
 <div class="topbar">
   <h1>青崖雪</h1>
   <div class="tools">
+    <button class="icon-btn" id="modeBtn" title="切换阅读模式">滚动</button>
     <button class="icon-btn" id="fontMinus" title="减小字号">A−</button>
     <button class="icon-btn" id="fontPlus" title="增大字号">A+</button>
     <button class="icon-btn" id="nightBtn" title="夜间模式">☾</button>
   </div>
 </div>
 
-<div class="wrap">
-  <div id="listView">
-    <div class="book-meta" id="bookMeta">正在连接阅读服务…</div>
-    <div id="chapterList"><div class="loading">加载中…</div></div>
-    <a class="epub-link" href="/epub" download="青崖雪.epub">下载 EPUB 版（导入手机阅读 App）</a>
-    <div class="tip">新章节写好之后，页面会自动检测。<br/>如果没看到更新，下拉刷新或关掉页面重新打开。<br/>阅读进度会自动保存在这台手机浏览器里。</div>
-  </div>
+<div class="wrap" id="listView">
+  <div class="book-meta" id="bookMeta">正在连接阅读服务…</div>
+  <div id="chapterList"><div class="loading">加载中…</div></div>
+  <a class="epub-link" href="/epub" download="青崖雪.epub">下载 EPUB 版（导入手机阅读 App）</a>
+  <div class="tip">翻页模式：点屏幕右侧翻下一页，左侧回上一页，也可以左右滑动。<br/>新章节写好会自动检测，下拉刷新目录即可看到。<br/>阅读进度会自动保存在这台手机浏览器里。</div>
+</div>
 
-  <div class="reader" id="readerView">
+<div class="reader" id="readerView">
+  <div class="reader-head">
     <a class="back-link" href="#" id="backLink">← 返回目录</a>
     <h2 id="readerTitle"></h2>
-    <div id="readerBody"></div>
-    <div class="nav">
-      <button id="prevBtn">上一章</button>
-      <button id="nextBtn">下一章</button>
-    </div>
+  </div>
+  <div id="readerBody"></div>
+  <div id="pageArea">
+    <div id="measure"></div>
+  </div>
+  <div id="pageIndicator"></div>
+  <div class="nav">
+    <button id="prevBtn">上一章</button>
+    <button id="nextBtn">下一章</button>
   </div>
 </div>
 
@@ -156,23 +191,32 @@ body {
   var KEY_CURRENT = "qys.current";
   var KEY_FONT = "qys.fontSize";
   var KEY_NIGHT = "qys.night";
-  var KEY_SEEN = "qys.seen";
+  var KEY_MODE = "qys.mode";
 
   var chapters = [];
   var currentFile = null;
   var chapterData = null;
   var fontSize = parseInt(localStorage.getItem(KEY_FONT), 10) || 18;
   var night = localStorage.getItem(KEY_NIGHT) === "1";
+  var mode = localStorage.getItem(KEY_MODE) === "scroll" ? "scroll" : "page";
+
+  var pages = [];
+  var currentPage = 0;
 
   var $ = function (id) { return document.getElementById(id); };
   var listView = $("listView"), readerView = $("readerView");
+  var pageArea = $("pageArea"), readerBody = $("readerBody");
+  var measure = $("measure");
 
   function applyFont() {
     fontSize = Math.min(26, Math.max(14, fontSize));
     localStorage.setItem(KEY_FONT, String(fontSize));
-    document.querySelectorAll("#readerBody p").forEach(function (p) {
-      p.style.fontSize = fontSize + "px";
-    });
+    if (mode === "page" && chapterData) relayoutPages();
+    else if (mode === "scroll") {
+      document.querySelectorAll("#readerBody p").forEach(function (p) {
+        p.style.fontSize = fontSize + "px";
+      });
+    }
   }
 
   function applyNight() {
@@ -181,12 +225,23 @@ body {
     $("nightBtn").textContent = night ? "☀" : "☾";
   }
 
+  function applyMode() {
+    document.body.classList.toggle("paged", mode === "page");
+    document.body.classList.toggle("scroll", mode === "scroll");
+    localStorage.setItem(KEY_MODE, mode);
+    $("modeBtn").textContent = mode === "page" ? "滚动" : "翻页";
+    if (chapterData) {
+      if (mode === "page") layoutPages();
+      else buildScrollBody();
+    }
+  }
+
   function toast(msg) {
     var t = $("toast");
     t.textContent = msg;
     t.classList.add("show");
     clearTimeout(t._timer);
-    t._timer = setTimeout(function () { t.classList.remove("show"); }, 3000);
+    t._timer = setTimeout(function () { t.classList.remove("show"); }, 2600);
   }
 
   function fetchJSON(url) {
@@ -197,36 +252,31 @@ body {
   }
 
   function seenFiles() {
-    try { return JSON.parse(localStorage.getItem(KEY_SEEN) || "[]"); }
+    try { return JSON.parse(localStorage.getItem("qys.seen") || "[]"); }
     catch (e) { return []; }
   }
-
   function saveSeen() {
-    localStorage.setItem(KEY_SEEN, JSON.stringify(chapters.map(function (c) { return c.file; })));
+    localStorage.setItem("qys.seen", JSON.stringify(chapters.map(function (c) { return c.file; })));
   }
-
-  function isNew(file) {
-    return seenFiles().indexOf(file) < 0;
+  function isNew(file) { return seenFiles().indexOf(file) < 0; }
+  function markSeen(file) {
+    var seen = seenFiles();
+    if (seen.indexOf(file) < 0) { seen.push(file); localStorage.setItem("qys.seen", JSON.stringify(seen)); }
   }
 
   function renderList() {
     var box = $("chapterList");
-    if (!chapters.length) {
-      box.innerHTML = '<div class="loading">还没有章节</div>';
-      return;
-    }
+    if (!chapters.length) { box.innerHTML = '<div class="loading">还没有章节</div>'; return; }
     $("bookMeta").textContent = "共 " + chapters.length + " 章 · 约 "
-      + Math.round(chapters.reduce(function (s, c) { return s + c.chars; }, 0) / 1000)
-      + " 万字";
+      + Math.round(chapters.reduce(function (s, c) { return s + c.chars; }, 0) / 1000) + " 万字";
     box.innerHTML = "";
-    chapters.forEach(function (c) {
+    chapters.forEach(function (c, idx) {
       var a = document.createElement("a");
       a.className = "chapter-item";
       a.href = "#";
       a.setAttribute("data-file", c.file);
-      var idx = chapters.indexOf(c);
-      var inner = '<div><div class="t">' + c.title + '</div>'
-        + '<div class="meta">约 ' + c.chars + ' 字</div></div>';
+      var inner = '<div><div class="t">' + c.title + '</div><div class="meta">约 '
+        + c.chars + ' 字</div></div>';
       if (isNew(c.file)) inner += '<span class="new">新</span>';
       else if (localStorage.getItem(KEY_PREFIX + c.file)) inner += '<span class="done">✓</span>';
       a.innerHTML = inner;
@@ -239,52 +289,155 @@ body {
     saveSeen();
   }
 
-  function markSeen(file) {
-    var seen = seenFiles();
-    if (seen.indexOf(file) < 0) {
-      seen.push(file);
-      localStorage.setItem(KEY_SEEN, JSON.stringify(seen));
+  /* ---------- 翻页布局 ---------- */
+  function contentWidth() {
+    return Math.max(200, pageArea.clientWidth - 28);
+  }
+  function pageMaxHeight() {
+    return Math.max(160, pageArea.clientHeight - 10);
+  }
+
+  function splitToFit(text) {
+    var chunks = [];
+    var cur = "";
+    for (var i = 0; i < text.length; i++) {
+      cur += text[i];
+      if (/[。！？!?]/.test(text[i])) { chunks.push(cur); cur = ""; }
     }
-  }
-
-  function openChapter(file, idx) {
-    currentFile = file;
-    localStorage.setItem(KEY_CURRENT, file);
-    listView.style.display = "none";
-    readerView.classList.add("show");
-    $("readerBody").innerHTML = '<div class="loading">加载中…</div>';
-    fetchJSON("/api/chapter?file=" + encodeURIComponent(file)).then(function (data) {
-      chapterData = data;
-      markSeen(file);
-      renderChapter();
-      renderList();
-      window.scrollTo(0, 0);
-    }).catch(function () {
-      $("readerBody").innerHTML = '<div class="loading">加载失败，请确认电脑端服务还开着</div>';
+    if (cur) chunks.push(cur);
+    if (!chunks.length) chunks.push(text);
+    var out = [];
+    var acc = "";
+    var maxH = pageMaxHeight();
+    var probe = document.createElement("p");
+    probe.className = "measure-p";
+    probe.style.fontSize = fontSize + "px";
+    probe.style.width = contentWidth() + "px";
+    probe.style.position = "fixed";
+    probe.style.left = "-10000px";
+    probe.style.visibility = "hidden";
+    document.body.appendChild(probe);
+    function fits(s) { probe.textContent = s; return probe.offsetHeight <= maxH; }
+    chunks.forEach(function (ch) {
+      var t = acc + ch;
+      if (fits(t)) { acc = t; }
+      else { if (acc) out.push(acc); acc = ch; }
     });
-    updateNavButtons();
+    if (acc) out.push(acc);
+    document.body.removeChild(probe);
+    return out;
   }
 
-  function renderChapter() {
+  function layoutPages() {
     if (!chapterData) return;
-    $("readerTitle").textContent = chapterData.title;
-    var body = $("readerBody");
-    body.innerHTML = "";
-    chapterData.paragraphs.forEach(function (p, i) {
-      var el = document.createElement("p");
-      el.id = "p" + i;
-      el.textContent = p;
-      el.style.fontSize = fontSize + "px";
-      body.appendChild(el);
+    var savedPara = savePointPara();
+    pages = [];
+    currentPage = 0;
+    var maxH = pageMaxHeight();
+    var w = contentWidth();
+    measure.style.width = w + "px";
+    measure.innerHTML = "";
+    var cur = [];
+
+    function flush() {
+      if (cur.length) { pages.push(cur); cur = []; }
+      measure.innerHTML = "";
+    }
+    function addPara(text) {
+      var p = document.createElement("p");
+      p.className = "measure-p";
+      p.textContent = text;
+      p.style.fontSize = fontSize + "px";
+      measure.appendChild(p);
+      cur.push({ para: text });
+      if (measure.scrollHeight > maxH && cur.length > 1) {
+        measure.removeChild(p);
+        flush();
+        measure.appendChild(p);
+        cur = [{ para: text }];
+        if (measure.scrollHeight > maxH) {
+          measure.removeChild(p);
+          flush();
+          var parts = splitToFit(text);
+          parts.forEach(function (pt) {
+            var q = document.createElement("p");
+            q.className = "measure-p";
+            q.textContent = pt;
+            q.style.fontSize = fontSize + "px";
+            measure.appendChild(q);
+            cur = [{ para: pt }];
+            if (measure.scrollHeight > maxH && cur.length > 1) {
+              measure.removeChild(q);
+              flush();
+              measure.appendChild(q);
+              cur = [{ para: pt }];
+            }
+          });
+        }
+      }
+    }
+
+    chapterData.paragraphs.forEach(function (txt) { addPara(txt); });
+    flush();
+    renderPages();
+    if (savedPara >= 0) {
+      for (var pi = 0; pi < pages.length; pi++) {
+        if (pages[pi][0].para === chapterData.paragraphs[savedPara]) { currentPage = pi; break; }
+        if (pages[pi].some(function (item) { return item.para === chapterData.paragraphs[savedPara]; })) { currentPage = pi; break; }
+      }
+    }
+    showPage();
+  }
+
+  function renderPages() {
+    pageArea.querySelectorAll(".page").forEach(function (el) { el.remove(); });
+    pages.forEach(function (items, idx) {
+      var div = document.createElement("div");
+      div.className = "page" + (idx === currentPage ? " active" : "");
+      items.forEach(function (item) {
+        var p = document.createElement("p");
+        p.textContent = item.para;
+        p.style.fontSize = fontSize + "px";
+        div.appendChild(p);
+      });
+      pageArea.appendChild(div);
     });
-    var idx = parseInt(localStorage.getItem(KEY_PREFIX + currentFile), 10);
-    if (!isNaN(idx) && document.getElementById("p" + idx)) {
-      document.getElementById("p" + idx).scrollIntoView();
+  }
+
+  function showPage() {
+    var els = pageArea.querySelectorAll(".page");
+    for (var i = 0; i < els.length; i++) els[i].classList.toggle("active", i === currentPage);
+    $("pageIndicator").textContent = pages.length ? ((currentPage + 1) + " / " + pages.length) : "";
+    saveProgress();
+  }
+
+  function goPage(delta) {
+    if (!pages.length) return;
+    var np = currentPage + delta;
+    if (np < 0 || np >= pages.length) return;
+    currentPage = np;
+    showPage();
+  }
+
+  function relayoutPages() {
+    if (!chapterData) return;
+    var para = savePointPara();
+    layoutPages();
+    if (para >= 0) {
+      for (var pi = 0; pi < pages.length; pi++) {
+        if (pages[pi].some(function (it) { return it.para === chapterData.paragraphs[para]; })) { currentPage = pi; break; }
+      }
+      showPage();
     }
   }
 
-  function saveProgress() {
-    if (!currentFile) return;
+  function savePointPara() {
+    if (!chapterData) return -1;
+    if (mode === "page") {
+      if (!pages.length || !pages[currentPage]) return -1;
+      var first = pages[currentPage][0].para;
+      return chapterData.paragraphs.indexOf(first);
+    }
     var paras = document.querySelectorAll("#readerBody p");
     var mid = window.scrollY + window.innerHeight * 0.35;
     var idx = 0;
@@ -292,7 +445,56 @@ body {
       if (paras[i].offsetTop <= mid) idx = i;
       else break;
     }
-    localStorage.setItem(KEY_PREFIX + currentFile, String(idx));
+    return idx;
+  }
+
+  /* ---------- 滚动模式 ---------- */
+  function buildScrollBody() {
+    if (!chapterData) return;
+    readerBody.innerHTML = "";
+    chapterData.paragraphs.forEach(function (p, i) {
+      var el = document.createElement("p");
+      el.id = "sp" + i;
+      el.textContent = p;
+      el.style.fontSize = fontSize + "px";
+      readerBody.appendChild(el);
+    });
+    var saved = parseInt(localStorage.getItem(KEY_PREFIX + currentFile), 10);
+    if (!isNaN(saved) && document.getElementById("sp" + saved)) {
+      document.getElementById("sp" + saved).scrollIntoView();
+    }
+  }
+
+  /* ---------- 章节 ---------- */
+  function openChapter(file, idx) {
+    currentFile = file;
+    localStorage.setItem(KEY_CURRENT, file);
+    listView.style.display = "none";
+    readerView.classList.add("show");
+    $("readerTitle").textContent = "加载中…";
+    pageArea.innerHTML = '<div class="loading">加载中…</div>';
+    readerBody.innerHTML = '<div class="loading">加载中…</div>';
+    fetchJSON("/api/chapter?file=" + encodeURIComponent(file)).then(function (data) {
+      chapterData = data;
+      markSeen(file);
+      renderList();
+      $("readerTitle").textContent = data.title;
+      pages = [];
+      currentPage = 0;
+      if (mode === "page") layoutPages();
+      else buildScrollBody();
+      window.scrollTo(0, 0);
+      updateNav();
+    }).catch(function () {
+      $("readerTitle").textContent = "加载失败";
+      pageArea.innerHTML = '<div class="loading">加载失败，请确认电脑端服务还开着</div>';
+    });
+  }
+
+  function saveProgress() {
+    if (!currentFile || !chapterData) return;
+    var idx = savePointPara();
+    if (idx >= 0) localStorage.setItem(KEY_PREFIX + currentFile, String(idx));
   }
 
   function goBack() {
@@ -301,23 +503,63 @@ body {
     listView.style.display = "";
     currentFile = null;
     chapterData = null;
+    pages = [];
+    currentPage = 0;
     window.scrollTo(0, 0);
   }
 
-  function updateNavButtons() {
+  function updateNav() {
     if (!currentFile || !chapters.length) return;
     var idx = chapters.findIndex(function (c) { return c.file === currentFile; });
     $("prevBtn").disabled = idx <= 0;
     $("nextBtn").disabled = idx < 0 || idx >= chapters.length - 1;
   }
 
-  function go(delta) {
+  function goChapter(delta) {
     var idx = chapters.findIndex(function (c) { return c.file === currentFile; });
     if (idx < 0) return;
     var next = idx + delta;
     if (next < 0 || next >= chapters.length) return;
     saveProgress();
     openChapter(chapters[next].file, next);
+  }
+
+  /* ---------- 交互 ---------- */
+  function bindReaderTaps() {
+    var startX = 0, startY = 0, moved = false;
+    pageArea.addEventListener("touchstart", function (e) {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      moved = false;
+    }, { passive: true });
+    pageArea.addEventListener("touchmove", function (e) {
+      var dx = e.touches[0].clientX - startX;
+      var dy = e.touches[0].clientY - startY;
+      if (Math.abs(dx) > 12 || Math.abs(dy) > 12) moved = true;
+    }, { passive: true });
+    pageArea.addEventListener("touchend", function (e) {
+      if (moved) {
+        var dx = e.changedTouches[0].clientX - startX;
+        var dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
+          if (dx < 0) goPage(1); else goPage(-1);
+        }
+      }
+    }, { passive: true });
+    pageArea.addEventListener("click", function (e) {
+      if (e.target.closest && e.target.closest("a, button")) return;
+      var rect = pageArea.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var w = rect.width;
+      if (x < w * 0.32) goPage(-1);
+      else if (x > w * 0.68) goPage(1);
+      else toast("第 " + (currentPage + 1) + " / " + pages.length + " 页");
+    });
+    document.addEventListener("keydown", function (e) {
+      if (!readerView.classList.contains("show") || mode !== "page") return;
+      if (e.key === "ArrowLeft") goPage(-1);
+      if (e.key === "ArrowRight") goPage(1);
+    });
   }
 
   function poll() {
@@ -328,10 +570,8 @@ body {
       var newFiles = chapters.map(function (c) { return c.file; }).join(",");
       if (chapters.length > oldCount || newFiles !== oldFiles) {
         renderList();
-        updateNavButtons();
-        if (chapters.length > oldCount) {
-          toast("发现新章节：" + chapters[chapters.length - 1].title);
-        }
+        updateNav();
+        if (chapters.length > oldCount) toast("发现新章节：" + chapters[chapters.length - 1].title);
       } else if (!document.querySelector("#chapterList .chapter-item")) {
         renderList();
       }
@@ -342,17 +582,29 @@ body {
 
   function init() {
     applyNight();
-    applyFont();
+    applyMode();
     $("fontMinus").addEventListener("click", function () { fontSize -= 1; applyFont(); });
     $("fontPlus").addEventListener("click", function () { fontSize += 1; applyFont(); });
     $("nightBtn").addEventListener("click", function () { night = !night; applyNight(); });
+    $("modeBtn").addEventListener("click", function () {
+      mode = mode === "page" ? "scroll" : "page";
+      applyMode();
+    });
     $("backLink").addEventListener("click", function (e) { e.preventDefault(); goBack(); });
-    $("prevBtn").addEventListener("click", function () { go(-1); });
-    $("nextBtn").addEventListener("click", function () { go(1); });
+    $("prevBtn").addEventListener("click", function () { goChapter(-1); });
+    $("nextBtn").addEventListener("click", function () { goChapter(1); });
     window.addEventListener("scroll", function () {
       clearTimeout(window._scrollTimer);
       window._scrollTimer = setTimeout(saveProgress, 400);
     }, { passive: true });
+    var resizeTimer = null;
+    window.addEventListener("resize", function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        if (mode === "page" && chapterData) relayoutPages();
+      }, 250);
+    });
+    bindReaderTaps();
     poll();
     var last = localStorage.getItem(KEY_CURRENT);
     if (last) {

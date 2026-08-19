@@ -12,7 +12,7 @@ import shutil
 
 ROOT = pathlib.Path(__file__).resolve().parent
 CH_DIR = ROOT / "chapters"
-SITE = ROOT / "site"
+SITE = ROOT / "docs"
 
 
 def main():
